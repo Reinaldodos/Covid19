@@ -1,0 +1,120 @@
+---
+title: "Covid19 progression"
+output: 
+  flexdashboard::flex_dashboard:
+    vertical_layout: fill
+    theme: journal
+runtime: shiny
+---
+
+```{r global, include=FALSE}
+source(file = "global.R", echo = F, encoding = "UTF-8")
+```
+
+# Inputs {.sidebar}
+
+On peut choisir ici quels pays on cherche à comparer.
+
+```{r}
+pickerInput(inputId = "Selection", label = "Countries selected:",
+            choices = Countries, 
+            selected = c("FRA", "ITA", "ESP", "GBR", "DEU"),
+            multiple = T,
+            options = list(`actions-box` = TRUE))
+
+selectInput(inputId = "Type", label = "Type:",
+            choices = c("confirmed", "deaths", "recovered"),
+            selected = "confirmed",
+            multiple = F)
+
+selectInput(inputId = "Choix", 
+              label = "Focus on:",
+            selected = "FRA",
+            choices = Countries, selectize = T,
+            multiple = F)
+
+observe({
+  updateSelectInput(session = session, 
+    inputId = "Choix",
+    label = "Focus on:",
+    selected = NULL,
+    choices = input$Selection
+  )
+})
+
+```
+
+Progression {data-navmenu="Progression de la pandémie"}
+=====================================
+
+```{r}
+PLOT =
+  function(){
+    Panel_data %>%
+      filter(iso3c %in% input$Selection) %>%
+      select(iso3c, country, 
+             Number = input$Type, date, population) %>%
+      filter(Number>0)
+  }
+```
+
+Row {.tabset .tabset-fade}
+-------------------------------------
+
+### Echelle simple
+```{r}
+renderPlot({
+  PLOT_rel_abs(plot = PLOT())
+})
+```
+
+### Echelle logarithmique
+```{r}
+renderPlot({
+  PLOT_rel_abs(plot = PLOT()) +
+    scale_y_log10()
+})
+```
+
+Echelle log-log {data-navmenu="Progression de la pandémie"}
+=====================================
+
+```{r}
+renderPlot({
+  Daily_data %>%
+    filter(iso3c %in% input$Selection,
+           Type == input$Type) %>%
+    ggplot(mapping = aes(
+      x = Number,
+      y = Daily_cases,
+      colour = country,
+      group = country
+    )) +
+    # geom_point()+
+    geom_smooth(se = F) +
+    scale_x_log10() +
+    scale_y_log10() +
+    theme(legend.position = "bottom") +
+    xlab(label = "Total confirmed cases") +
+    ylab(label = "New confirmed cases")
+})
+```
+
+Modélisation {data-navmenu="Modélisation épidémiologique"}
+=====================================
+
+```{r warning=FALSE}
+renderPlot({
+  PlotIncidence(incidence = Incidences[[input$Choix]])
+})
+```
+
+R0 glissant {data-navmenu="Modélisation épidémiologique"}
+=====================================
+
+```{r}
+renderPlot({
+  plot(estimateR[[input$Choix]])
+})
+```
+
