@@ -85,3 +85,24 @@ renderPlot({
 })
 ```
 
+Moyennes glissantes
+============
+
+```{r}
+renderPlot({
+  Daily_data %>%
+    filter(iso3c %in% input$Selection,
+           Type != "recovered") %>%
+    group_by(Type, iso3c) %>%
+    mutate(Mobile = zoo::rollmean(x = Daily_cases,
+                                  k = 10, na.pad = T)) %>%
+    ungroup() %>%
+    ggplot(mapping = aes(x = date)) +
+    geom_smooth(mapping = aes(y = Mobile, colour = country)) +
+    scale_y_log10() +
+    facet_wrap(facets = ~ Type, scales = "free_y") +
+    theme(legend.position = "bottom") +
+    xlab(label = "Date") +
+    ylab(label = "Daily cases")
+})
+```
