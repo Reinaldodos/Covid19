@@ -8,10 +8,11 @@ Panel_data <- download_merged_data(cached = TRUE)
 
 Long_data =
   Panel_data %>%
-  mutate(date = lubridate::ymd(date)) %>%
-  select(iso3c, country, date, confirmed, deaths, recovered) %>%
+  mutate(date = lubridate::ymd(date),
+         infected = confirmed-deaths-recovered) %>% 
+  select(iso3c, country, date, confirmed, deaths, recovered, infected) %>%
   pivot_longer(
-    cols = c("confirmed", "deaths", "recovered"),
+    cols = c("confirmed", "deaths", "recovered", "infected"),
     names_to = "Type",
     values_to = "Number"
   ) 

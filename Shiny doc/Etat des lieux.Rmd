@@ -75,7 +75,7 @@ renderPlot({
       colour = country,
       group = country
     )) +
-    # geom_point()+
+    # geom_line()+
     geom_smooth(se = F) +
     scale_x_log10() +
     scale_y_log10() +
@@ -95,10 +95,10 @@ renderPlot({
            Type != "recovered") %>%
     group_by(Type, iso3c) %>%
     mutate(Mobile = zoo::rollmean(x = Daily_cases,
-                                  k = 10, na.pad = T)) %>%
+                                  k = 14, na.pad = T)) %>%
     ungroup() %>%
     ggplot(mapping = aes(x = date)) +
-    geom_smooth(mapping = aes(y = Mobile, colour = country)) +
+    geom_line(mapping = aes(y = Mobile, colour = country)) +
     scale_y_log10() +
     facet_wrap(facets = ~ Type, scales = "free_y") +
     theme(legend.position = "bottom") +
