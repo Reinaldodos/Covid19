@@ -27,5 +27,5 @@ Daily_data =
 Countries = 
   Panel_data %>%
   group_by(country) %>% filter(confirmed==max(confirmed, na.rm = T)) %>% 
-  ungroup %>% arrange(-confirmed) %>% pull(iso3c) %>% unique()
+  ungroup %>% arrange(iso3c) %>% pull(iso3c) %>% unique()
 

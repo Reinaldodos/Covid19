@@ -95,7 +95,7 @@ renderPlot({
            Type != "recovered") %>%
     group_by(Type, iso3c) %>%
     mutate(Mobile = zoo::rollmean(x = Daily_cases,
-                                  k = 14, na.pad = T)) %>%
+                                  k = 7, na.pad = T)) %>%
     ungroup() %>%
     ggplot(mapping = aes(x = date)) +
     geom_line(mapping = aes(y = Mobile, colour = country)) +
