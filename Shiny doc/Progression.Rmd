@@ -7,7 +7,7 @@ output:
 runtime: shiny
 ---
 
-```{r global, include=FALSE}
+```{r global, include=FALSE, warning=FALSE}
 source(file = "global.R", echo = F, encoding = "UTF-8")
 source(file = "Epidemio.R", echo = F, encoding = "UTF-8")
 ```

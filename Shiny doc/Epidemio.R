@@ -1,12 +1,8 @@
-pacman::p_load(EpiEstim)
+pacman::p_load(EpiEstim, magrittr)
 Incidences =
   Daily_data %>%
-  drop_na(Daily_cases) %>%
-  filter(Daily_cases > 0) %>% 
-  count(country) %>% filter(n >= 7) %>%
-  semi_join(x = Daily_data, 
-            by = "country") %>%
-  split(f = .$iso3c) %>%
+  split(f = .$iso3c) %>% 
+  map(.f = Deuxieme_vague) %>%
   map(.f = Calcul_incidence)
 
 estimateR =
@@ -15,3 +11,15 @@ estimateR =
       method = "parametric_si",
       config = make_config(list(mean_si = 5,
                                 std_si = 3.4)))
+
+Dates=
+estimateR$FRA$dates %>% lubridate::as_date() %>%  
+  data.frame(Date=.) %>% 
+  rowid_to_column()
+
+estimateR$FRA$R %>% 
+  gather(key = start_end, value = rowid, starts_with("t_")) %>% 
+  left_join(y=Dates, by = "rowid") %>% 
+  select(-rowid) %>% spread(key = start_end, value = Date) %>% 
+  select(starts_with("t_"), everything()) %>% 
+  view()

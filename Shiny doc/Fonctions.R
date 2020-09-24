@@ -1,3 +1,36 @@
+Deuxieme_vague <- function(DATA) {
+  PEAK =
+    DATA %>% 
+    filter(Type=="deaths") %>% 
+    mutate(Mobile = zoo::rollmean(x = Daily_cases,
+                                  k = 14, na.pad = T)) %>%
+    filter(Mobile == max(Mobile, na.rm = T)) %>%
+    pull(date)
+  
+  if (length(PEAK)==0) {
+    PEAK = lubridate::today()
+  }
+  
+  Origine =
+    DATA %>%
+    filter(Type=="confirmed") %>% 
+    mutate(Mobile = zoo::rollmean(x = Daily_cases,
+                                  k = 14, na.pad = T)) %>%
+    filter(date > PEAK) %>%
+    filter(Mobile == min(Mobile, na.rm = T)) %>%
+    pull(date)
+  
+  if (length(Origine) == 0) {
+    DATA = DATA
+  } else {
+    DATA = DATA %>% filter(date>=Origine)
+    }
+  
+  DATA %>%
+    filter(Type=="confirmed") %>% 
+    return()
+}
+
 Calcul_incidence <- function(FRANCE) {
   require(lubridate)
   require(incidence)
