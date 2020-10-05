@@ -22,10 +22,10 @@ Daily_data =
   group_by(country, Type) %>%
   mutate(Daily_cases = Number - lag(Number)) %>% ungroup %>%
   drop_na(Daily_cases) %>% 
-  filter(Daily_cases>0)
+  filter(Daily_cases > 0)
 
 Countries = 
   Panel_data %>%
-  group_by(country) %>% filter(confirmed==max(confirmed, na.rm = T)) %>% 
+  group_by(country) %>% filter(confirmed == max(confirmed, na.rm = T)) %>%
   ungroup %>% arrange(iso3c) %>% pull(iso3c) %>% unique()
 

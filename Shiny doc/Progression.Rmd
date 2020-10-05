@@ -106,7 +106,7 @@ Modélisation {data-navmenu="Modélisation épidémiologique"}
 
 ```{r warning=FALSE}
 renderPlot({
-  PlotIncidence(incidence = Incidences[[input$Choix]])
+  PlotIncidence(incidence = Incidences_current_wave[[input$Choix]])
 })
 ```
 
