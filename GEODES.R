@@ -31,7 +31,7 @@ HISTO_GRAPHE <- function(graphe) {
 
 
 
-Capacites = "C:/Users/rdossant/Documents/Capacités hospitalières.xlsx" %>% rio::import()
+Capacites = "./Capacités hospitalières.xlsx" %>% rio::import()
 
 input =
   "https://static.data.gouv.fr/resources/donnees-hospitalieres-relatives-a-lepidemie-de-covid-19/20200929-190022/donnees-hospitalieres-covid19-2020-09-29-19h00.csv" %>%
@@ -65,7 +65,7 @@ Vague =
   PLOTT(VAR = Occupation) %>% SEUILS() +
   geom_smooth(se = F)
 
-plotly::ggplotly(Vague)
+plotly::ggplotly(dynamicTicks = T, p = Vague)
 
 BdR =
   output %>%
@@ -85,7 +85,7 @@ Big_Wave =
 
 Big_Wave %>%
   PLOTT(VAR = Occupation) %>%
-  # SEUILS() %>%
+  SEUILS() %>%
   HISTO_GRAPHE() +
   facet_wrap( ~ Libellé)+
   xlim(dmy(01072020, NA))
