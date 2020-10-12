@@ -34,10 +34,32 @@ HISTO_GRAPHE <- function(graphe) {
 Capacites = "./Capacités hospitalières.xlsx" %>% rio::import()
 
 input =
-  "https://static.data.gouv.fr/resources/donnees-hospitalieres-relatives-a-lepidemie-de-covid-19/20200929-190022/donnees-hospitalieres-covid19-2020-09-29-19h00.csv" %>%
-  rio::import() %>%
+  "https://www.data.gouv.fr/en/datasets/r/63352e38-d353-4b54-bfd1-f1b3ee1cabd7" %>%
+  rio::import(format = "csv") %>%
   group_by(dep, jour) %>%
-  summarise(Rea = sum(rea, na.rm = T), .groups = "drop") %>%
+  summarise(Rea = sum(rea, na.rm = T), .groups = "drop") 
+
+output =
+  inner_join(x = input,
+             y = Capacites,
+             by = "dep") %>%
+  mutate_at(.vars = vars(dep, Libellé),
+            .funs = as.factor) %>%
+  mutate(Occupation = Mobile / Lits)
+
+# gérer les merdouilles sur les dates
+date_ymd = 
+  output %>% 
+  mutate_at(.vars = "jour", .funs = lubridate::ymd) %>% 
+  drop_na(jour)
+
+date_dmy = 
+  output %>% 
+  filter(str_detect(string = jour, pattern = "/")) %>% 
+  mutate_at(.vars = "jour", .funs = lubridate::dmy) %>% 
+  drop_na(jour)
+
+output = bind_rows(date_ymd, date_dmy)%>%
   mutate(Mobile = zoo::rollmean(
     x = Rea,
     k = 7,
@@ -45,17 +67,10 @@ input =
     align = "right"
   ))
 
-output =
-  inner_join(x = input,
-             y = Capacites,
-             by = "dep") %>%
-  mutate_at(.vars = "jour",
-            .funs = lubridate::ymd) %>%
-  mutate_at(.vars = vars(dep, Libellé),
-            .funs = as.factor) %>%
-  mutate(Occupation = Mobile / Lits)
 
-output %>%
+
+Departements = 
+  output %>%
   ggplot(mapping = aes(x = jour, y = Mobile)) +
   geom_bar(stat = "identity") +
   facet_wrap( ~ Libellé, scales = "free_y")
@@ -64,8 +79,6 @@ Vague =
   output %>%
   PLOTT(VAR = Occupation) %>% SEUILS() +
   geom_smooth(se = F)
-
-plotly::ggplotly(dynamicTicks = T, p = Vague)
 
 BdR =
   output %>%
@@ -92,5 +105,7 @@ Big_Wave %>%
 
 Big_Wave %>%
   PLOTT(VAR = Mobile) +
-  geom_smooth() +
+  geom_line() +
   scale_y_log10() 
+
+plotly::ggplotly(dynamicTicks = T, p = Vague)
