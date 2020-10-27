@@ -1,4 +1,5 @@
 pacman::p_load(rio, tidyverse, data.table, lubridate, zoo)
+
 PLOTT = function(output, VAR) {
   graphe =
     output %>%
@@ -44,8 +45,7 @@ output =
              y = Capacites,
              by = "dep") %>%
   mutate_at(.vars = vars(dep, Libellé),
-            .funs = as.factor) %>%
-  mutate(Occupation = Mobile / Lits)
+            .funs = as.factor) 
 
 # gérer les merdouilles sur les dates
 date_ymd = 
@@ -65,9 +65,8 @@ output = bind_rows(date_ymd, date_dmy)%>%
     k = 7,
     na.pad = T,
     align = "right"
-  ))
-
-
+  )) %>% 
+  mutate(Occupation = Mobile/Lits)
 
 Departements = 
   output %>%
@@ -77,35 +76,27 @@ Departements =
 
 Vague =
   output %>%
-  PLOTT(VAR = Occupation) %>% SEUILS() +
-  geom_smooth(se = F)
+  PLOTT(VAR = Mobile) +
+  geom_line() +
+  scale_y_log10()
 
-BdR =
-  output %>%
-  filter(dep == "13",
-         jour == max(jour, na.rm = T)) %>% pull(Lits)
-
-Paris =
-  output %>%
-  filter(dep == "75",
-         jour == max(jour, na.rm = T)) %>% pull(Occupation)
+Curfew = c(75,77,78,91,92,93,94,95,38,59,69,13,42,76,34,31) %>% as.character()
 
 Big_Wave =
-  output %>%
-  filter(Lits >= BdR / 2,
-         jour == max(jour, na.rm = T)) %>% 
-  distinct(dep) %>% semi_join(x = output, by = "dep")
+  data.frame(dep = Curfew) %>% 
+  semi_join(x = output, by = "dep")
 
 Big_Wave %>%
+  filter(jour > lubridate::dmy(11072020)) %>% 
   PLOTT(VAR = Occupation) %>%
-  SEUILS() %>%
   HISTO_GRAPHE() +
-  facet_wrap( ~ Libellé)+
-  xlim(dmy(01072020, NA))
+  facet_wrap( ~ Libellé)
 
 Big_Wave %>%
   PLOTT(VAR = Mobile) +
-  geom_line() +
-  scale_y_log10() 
+  # scale_y_log10() +
+  geom_line(mapping = aes(colour = Libellé)) 
 
 plotly::ggplotly(dynamicTicks = T, p = Vague)
+
+
