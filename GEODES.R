@@ -35,7 +35,7 @@ HISTO_GRAPHE <- function(graphe) {
 Capacites = "./Capacités hospitalières.xlsx" %>% rio::import()
 
 input =
-  "https://www.data.gouv.fr/en/datasets/r/63352e38-d353-4b54-bfd1-f1b3ee1cabd7" %>%
+  "https://www.data.gouv.fr/en/datasets/r/63352e38-d353-4b54-bfd1-f1b3ee1cabd7" %>% 
   rio::import(format = "csv") %>%
   group_by(dep, jour) %>%
   summarise(Rea = sum(rea, na.rm = T), .groups = "drop") 
@@ -70,7 +70,9 @@ output = bind_rows(date_ymd, date_dmy)%>%
 
 Departements = 
   output %>%
-  ggplot(mapping = aes(x = jour, y = Mobile)) +
+  filter(jour > lubridate::dmy(11092020)) %>% 
+  ggplot(mapping = aes(x = jour, 
+                       y = Occupation)) +
   geom_bar(stat = "identity") +
   facet_wrap( ~ Libellé, scales = "free_y")
 
@@ -80,21 +82,23 @@ Vague =
   geom_line() +
   scale_y_log10()
 
-Curfew = c(75,77,78,91,92,93,94,95,38,59,69,13,42,76,34,31) %>% as.character()
+Curfew = 
+  c(75, 77, 78, 91, 92, 93, 94, 95, 38, 59, 69, 13, 42, 76, 34, 31) %>%
+  as.character()
 
 Big_Wave =
   data.frame(dep = Curfew) %>% 
   semi_join(x = output, by = "dep")
 
 Big_Wave %>%
-  filter(jour > lubridate::dmy(11072020)) %>% 
-  PLOTT(VAR = Occupation) %>%
+  filter(jour > lubridate::dmy(11092020)) %>% 
+  PLOTT(VAR = Mobile) %>%
   HISTO_GRAPHE() +
   facet_wrap( ~ Libellé)
 
 Big_Wave %>%
   PLOTT(VAR = Mobile) +
-  # scale_y_log10() +
+  scale_y_log10() +
   geom_line(mapping = aes(colour = Libellé)) 
 
 plotly::ggplotly(dynamicTicks = T, p = Vague)
