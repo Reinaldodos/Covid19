@@ -34,13 +34,13 @@ Deuxieme_vague <- function(DATA) {
 Calcul_incidence <- function(FRANCE) {
   require(lubridate)
   require(incidence)
-  Dates = FRANCE %>% pull(date)
+  Dates = FRANCE %>% pull(date) %>% as.character()
   REPS = FRANCE %>% pull(Daily_cases)
   France_list =
     pmap(.f = base::rep,
          .l = list(x = Dates,
                    times = REPS)) %>%
-    map(as.character) %>% flatten_chr() %>% lubridate::ymd()
+    flatten_chr() %>% lubridate::ymd()
   France_incidence =  incidence(France_list)
   return(France_incidence)
 }
